@@ -18,14 +18,12 @@
  */
 package simplenlg.syntax.english.nonstatic;
 
-import gov.nih.nlm.nls.lvg.Util.In;
 import simplenlg.features.*;
 import simplenlg.framework.*;
 import simplenlg.phrasespec.AdvPhraseSpec;
 import simplenlg.phrasespec.SPhraseSpec;
 import simplenlg.phrasespec.VPPhraseSpec;
 import simplenlg.syntax.AbstractClauseHelper;
-import simplenlg.syntax.english.SyntaxProcessor;
 
 import java.util.List;
 
@@ -199,7 +197,7 @@ public class ClauseHelper extends AbstractClauseHelper {
 	}
 
 	/**
-	 * Method for adding the subject after the verb. Mainly used for interrogatives
+	 * Method for adding the subject directly after the verb if necessary. Mainly used for interrogatives
 	 * @param realisedElement, the current list of realised elements
 	 * @param realisedSubject, the subject that has to go behind the verb, if no current subject is found
 	 */
@@ -229,7 +227,6 @@ public class ClauseHelper extends AbstractClauseHelper {
 								for(int partIndex = 0; partIndex < parts.size(); partIndex++){
 									NLGElement part = parts.get(partIndex);
 									if (part.hasFeature(InternalFeature.DISCOURSE_FUNCTION) && part.getFeature(InternalFeature.DISCOURSE_FUNCTION).equals(DiscourseFunction.SUBJECT)) {
-										realisedSubject = (ListElement) elementComponents.remove(cIndex);
 										((ListElement) alreadyRealisedElement).setComponents(elementComponents);
 										realisedElement.setComponents(alreadyRealisedElements);
 									}
@@ -240,6 +237,7 @@ public class ClauseHelper extends AbstractClauseHelper {
 								if(elementComponents.size() > 0){
 									((ListElement) alreadyRealisedElement).setComponents(elementComponents);
 								}
+								// Remove the subject from the sentence
 								realisedSubject = (ListElement) alreadyRealisedElements.remove(vpIndex);
 								realisedElement.setComponents(alreadyRealisedElements);
 							}
@@ -248,25 +246,18 @@ public class ClauseHelper extends AbstractClauseHelper {
 
 				}
 			}
-			//Move the subject after the verb in the sentence
+			//Move the subject after the finite verb in the sentence
 			for(int vpIndex = 0; vpIndex < alreadyRealisedElements.size(); vpIndex++) {
 				//Get the children of each element
 				NLGElement alreadyRealisedElement = alreadyRealisedElements.get(vpIndex);
-				//Check if one of them is a VERB_PHRASE, otherwise, check if one of the children is a VERB_PHRASE
-				if (alreadyRealisedElement.getCategory().equalTo(PhraseCategory.VERB_PHRASE)){
+				//Check if one of them is a finite verb, otherwise, check if one of the children is a VERB_PHRASE
+				if (alreadyRealisedElement.hasFeature("discourse_function") &&
+						alreadyRealisedElement.getFeature("discourse_function").equals(DiscourseFunction.VERB_PHRASE) ||
+						alreadyRealisedElement.getCategory().equalTo(PhraseCategory.VERB_PHRASE)){
 					List<NLGElement> elementComponents = alreadyRealisedElement.getChildren();
 					if(elementComponents != null){
-						for (int cIndex = 0; cIndex < elementComponents.size(); cIndex++) {
-							NLGElement component = elementComponents.get(cIndex);
-							//If a child is a VERB, add the realisedSubject after it
-							if (component.getCategory().equalTo(PhraseCategory.VERB_PHRASE) || component.getCategory().equalTo(LexicalCategory.VERB)) {
-								elementComponents.add(cIndex+1,realisedSubject);
-								((ListElement) alreadyRealisedElement).setComponents(elementComponents);
-								alreadyRealisedElements.set(vpIndex, alreadyRealisedElement);
-								realisedElement.setComponents(alreadyRealisedElements);
-								return true;
-							}
-						}
+						if (addSubjectAfterChildVerb(realisedElement, realisedSubject, alreadyRealisedElements, vpIndex, alreadyRealisedElement, elementComponents))
+							return true;
 					}
 					else{
 						alreadyRealisedElements.add(vpIndex+1,realisedSubject);
@@ -277,19 +268,25 @@ public class ClauseHelper extends AbstractClauseHelper {
 				else {
 					List<NLGElement> elementComponents = alreadyRealisedElement.getChildren();
 					if (elementComponents != null) {
-						for (int cIndex = 0; cIndex < elementComponents.size(); cIndex++) {
-							NLGElement component = elementComponents.get(cIndex);
-							//If a child is a VERB, add the realisedSubject after it
-							if (component.getCategory().equalTo(PhraseCategory.VERB_PHRASE) || component.getCategory().equalTo(LexicalCategory.VERB)) {
-								elementComponents.add(cIndex+1,realisedSubject);
-								((ListElement) alreadyRealisedElement).setComponents(elementComponents);
-								alreadyRealisedElements.set(vpIndex, alreadyRealisedElement);
-								realisedElement.setComponents(alreadyRealisedElements);
-								return true;
-							}
-						}
+						if (addSubjectAfterChildVerb(realisedElement, realisedSubject, alreadyRealisedElements, vpIndex, alreadyRealisedElement, elementComponents))
+							return true;
 					}
 				}
+			}
+		}
+		return false;
+	}
+
+	private boolean addSubjectAfterChildVerb(ListElement realisedElement, ListElement realisedSubject, List<NLGElement> alreadyRealisedElements, int vpIndex, NLGElement alreadyRealisedElement, List<NLGElement> elementComponents) {
+		for (int cIndex = 0; cIndex < elementComponents.size(); cIndex++) {
+			NLGElement component = elementComponents.get(cIndex);
+			//If a child is a VERB, add the realisedSubject after it
+			if (component.getCategory().equalTo(PhraseCategory.VERB_PHRASE) || component.getCategory().equalTo(LexicalCategory.VERB)) {
+				elementComponents.add(cIndex+1,realisedSubject);
+				((ListElement) alreadyRealisedElement).setComponents(elementComponents);
+				alreadyRealisedElements.set(vpIndex, alreadyRealisedElement);
+				realisedElement.setComponents(alreadyRealisedElements);
+				return true;
 			}
 		}
 		return false;

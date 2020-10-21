@@ -113,19 +113,10 @@ public abstract class AbstractClauseHelper {
 				}
 			}
 			//In these types of interrogatives, the subject is after the verb
-			if (interrogativeType instanceof InterrogativeType
-					&& interrogativeType != InterrogativeType.WHY
-					&& interrogativeType != InterrogativeType.WHERE
-					&& interrogativeType != InterrogativeType.WHO_SUBJECT
-					&& interrogativeType != InterrogativeType.WHAT_SUBJECT
-					&& interrogativeType != InterrogativeType.HOW_COME
-					&& interrogativeType != InterrogativeType.WHO_INDIRECT_OBJECT
-					&& interrogativeType != InterrogativeType.WHO_OBJECT){
+			if (interrogativeType instanceof InterrogativeType && interrogativeType == InterrogativeType.HOW_ADJECTIVE){
 				addSubjectsToFront(phrase, realisedElement, splitVerb);
 			}
 
-
-			//realiseVerb(phrase, realisedElement, splitVerb, verbElement, interrogObj);
 			addPassiveSubjects(phrase, realisedElement, phraseFactory);
 			addInterrogativeFrontModifiers(phrase, realisedElement);
 			addEndingTo(phrase, realisedElement, phraseFactory);

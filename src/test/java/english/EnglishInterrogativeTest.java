@@ -39,8 +39,9 @@ public class EnglishInterrogativeTest {
         clause.addComplement(pp);
         clause.addComplement("working as a professor");
         clause.setFeature(Feature.INTERROGATIVE_TYPE, InterrogativeType.WHAT_OBJECT);
+        clause.setFeature(Feature.TENSE, Tense.FUTURE);
         String output = realiser.realiseSentence(clause);
-        collector.checkThat(output, equalTo("What do you think about John working as a professor?"));
+        collector.checkThat(output, equalTo("What will you think about John working as a professor?"));
     }
 
     @Test
@@ -199,8 +200,10 @@ public class EnglishInterrogativeTest {
         pp.setPreposition("about");
         clause.addComplement(pp);
         clause.setFeature(Feature.INTERROGATIVE_TYPE, InterrogativeType.HOW);
+        clause.setFeature(Feature.TENSE, Tense.FUTURE);
+        clause.setFeature(Feature.PERFECT,true);
         String output = realiser.realiseSentence(clause);
-        collector.checkThat(output, equalTo("How do you think about John?"));
+        collector.checkThat(output, equalTo("How will you have thought about John?"));
     }
 
 

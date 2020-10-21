@@ -34,7 +34,6 @@ public class DutchDeclarativeTest {
         clause.setVerb("motiveren");
         clause.setObject("Jan");
         clause.setFeature(Feature.TENSE, Tense.FUTURE);
-//        clause.setFeature(Feature.PERFECT,true);
         String output = realiser_nl.realiseSentence(clause);
         collector.checkThat(output, equalTo("Jij zult Jan motiveren."));
     }
